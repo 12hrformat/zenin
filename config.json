@@ -1,0 +1,28 @@
+{
+  "site": {
+    "name": "zenin",
+    "tagline": "The Discord server directory where servers get discovered",
+    "perPage": 24
+  },
+  "bot": {
+    "name": "zenin",
+    "xpPerMessage": [15, 25],
+    "xpCooldownMs": 20000,
+    "aiCooldownMs": 8000,
+    "historyWindow": 200,
+    "activityWindowMs": 900000,
+    "defaultAiModel": "openai/gpt-4o-mini"
+  },
+  "levels": {
+    "xpMultiplierBase": 50
+  },
+  "giveaway": {
+    "emoji": "🎉"
+  },
+  "learning": {
+    "minWordFrequency": 3,
+    "minPhraseFrequency": 2,
+    "maxWords": 60,
+    "maxPhrases": 40
+  }
+}

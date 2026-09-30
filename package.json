@@ -1,0 +1,20 @@
+{
+  "name": "zenin",
+  "version": "2.0.0",
+  "description": "zenin — Discord bot with a public server directory, AI chat, MEE6-style leveling and giveaways",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning index.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch index.js",
+    "reset:db": "node -e \"const fs=require('fs');for(const f of ['zenin.db','zenin.db-wal','zenin.db-shm'])fs.rmSync(f,{force:true});console.log('db cleared')\""
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.1",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2"
+  }
+}
