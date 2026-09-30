@@ -12,7 +12,13 @@
 
       <div class="hero__actions">
         <a class="btn btn--primary" href="<%= invite %>" target="_blank" rel="noopener">Add zenin to your server</a>
-        <a class="btn btn--ghost" href="/browse">Browse <%= stats.listed %> listed servers</a>
+        <a class="btn btn--ghost" href="/browse">
+          <% if (stats.listed > 0) { %>
+            Browse <%= stats.listed %> listed <%= stats.listed === 1 ? 'server' : 'servers' %>
+          <% } else { %>
+            Browse the directory
+          <% } %>
+        </a>
       </div>
 
       <dl class="statline">

@@ -46,12 +46,21 @@ module.exports = function directoryRoutes(client) {
       page,
     });
 
+    // An empty directory and an over-filtered one need different copy, so we
+    // check the unfiltered total rather than inferring it from zero results.
+    const directoryIsEmpty = listings.browse({ page: 1, perPage: 1 }).total === 0;
+    const filtersActive = Boolean(
+      req.query.q || req.query.tag || req.query.sponsoring === '1' || parseInt(req.query.min)
+    );
+
     res.render('browse', {
       title: 'Browse servers',
       servers: result.items.map(shape),
       page: result.page,
       totalPages: result.totalPages,
       total: result.total,
+      directoryIsEmpty,
+      filtersActive,
       tags: listings.allTags().slice(0, 24),
       filters: {
         q: req.query.q || '',

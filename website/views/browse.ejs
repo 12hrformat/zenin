@@ -7,8 +7,15 @@
         <p class="eyebrow">Directory</p>
         <h2>Browse servers</h2>
         <p class="section__sub">
-          <span class="num"><%= total.toLocaleString() %></span> listed
-          <% if (filters.sponsoring) { %> · filtered to those seeking sponsors<% } %>
+          <% if (total > 0) { %>
+            <span class="num"><%= total.toLocaleString() %></span>
+            <%= total === 1 ? 'server' : 'servers' %> listed
+            <% if (filters.sponsoring) { %> · filtered to those seeking sponsors<% } %>
+          <% } else if (directoryIsEmpty) { %>
+            Nothing listed yet
+          <% } else { %>
+            No matches for these filters
+          <% } %>
         </p>
       </div>
       <a class="btn btn--primary btn--sm" href="<%= invite %>" target="_blank" rel="noopener">List your server</a>
@@ -60,10 +67,19 @@
       </div>
     </form>
 
-    <% if (!servers.length) { %>
+    <% if (!servers.length && directoryIsEmpty) { %>
+      <div class="empty">
+        <h3>No servers listed yet</h3>
+        <p>
+          The directory is empty. Every server here is added by its own owner running
+          <code>/sponsor add</code> — nothing is pre-filled or seeded.
+        </p>
+        <a class="btn btn--primary" href="<%= invite %>" target="_blank" rel="noopener">List the first server</a>
+      </div>
+    <% } else if (!servers.length) { %>
       <div class="empty">
         <h3>No servers match</h3>
-        <p>Try a broader search, or clear the filters.</p>
+        <p>There are listings, but none fit these filters. Try a broader search.</p>
         <a class="btn btn--ghost" href="/browse">Clear filters</a>
       </div>
     <% } else { %>
