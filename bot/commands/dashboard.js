@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const dashTokens = require('../services/dashTokens');
 const { siteUrl } = require('../services/helpers');
 
@@ -8,7 +8,7 @@ module.exports = {
     .setDescription('Get a private link to manage your server from the website'),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const { token, expiresAt } = dashTokens.issue(interaction.guild.id, interaction.user.id);
 

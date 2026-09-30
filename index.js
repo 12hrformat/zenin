@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const { initDatabase } = require('./database');
-const { ensureGuildRow, ensurePermanentInvite } = require('./bot/services/listings');
 
 // ---- config validation -------------------------------------------------
 const problems = [];
@@ -78,11 +77,5 @@ process.on('uncaughtException', err => console.error('[fatal] uncaught exception
     await site.start(client);
   } catch (err) {
     console.error('[web] failed to start:', err.message);
-  }
-
-  // Backfill any guild that joined while we were down.
-  for (const guild of client.guilds.cache.values()) {
-    ensureGuildRow(guild);
-    ensurePermanentInvite(guild).catch(() => {});
   }
 })();

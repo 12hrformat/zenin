@@ -1,3 +1,4 @@
+const { Events } = require('discord.js');
 const config = require('../../config.json');
 const listings = require('../services/listings');
 const giveaway = require('../services/giveaway');
@@ -5,7 +6,11 @@ const dashTokens = require('../services/dashTokens');
 const { deployCommands } = require('../deploy');
 
 module.exports = {
-  name: 'ready',
+  // discord.js renamed `ready` to `clientReady` to distinguish it from the
+  // gateway READY packet, and emits a DeprecationWarning for the old name.
+  // Older 14.x releases only emit `ready`, so fall back when the constant is
+  // absent rather than silently never firing.
+  name: Events.ClientReady || 'ready',
   once: true,
   async execute(client) {
     global.client = client;
@@ -14,6 +19,9 @@ module.exports = {
     console.log(`[Bot] ${client.guilds.cache.size} server(s), ${client.users.cache.size} cached user(s)`);
 
     // Backfill permanent invites + rows for guilds joined before a restart.
+    // This must happen here and not right after login(): immediately after
+    // login() the guild cache holds stubs whose name/icon are still undefined,
+    // which node:sqlite refuses to bind.
     const results = await Promise.allSettled(
       [...client.guilds.cache.values()].map(async guild => {
         listings.ensureGuildRow(guild);

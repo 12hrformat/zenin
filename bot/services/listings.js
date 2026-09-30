@@ -99,12 +99,13 @@ function ensureGuildRow(guild) {
        is_active    = 1`
   ).run(
     guild.id,
-    guild.name,
-    guild.ownerId,
-    // node:sqlite rejects undefined outright, and iconURL() returns undefined
-    // (not null) for a guild with no icon, so normalise to null.
-    guild.iconURL ? (guild.iconURL({ extension: 'png', size: 128 }) ?? null) : null,
-    guild.memberCount || 0,
+    // A guild that has not finished populating (cache stubs right after login)
+    // has undefined for these, and node:sqlite rejects undefined outright.
+    // Coerce everything to a bindable type rather than crashing the process.
+    guild.name ?? '(unknown server)',
+    guild.ownerId ?? null,
+    (guild.iconURL ? guild.iconURL({ extension: 'png', size: 128 }) : null) ?? null,
+    Number.isFinite(guild.memberCount) ? guild.memberCount : 0,
     now
   );
 }

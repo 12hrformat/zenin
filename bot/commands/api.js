@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const aiKeys = require('../services/aiKeys');
 const { canManageServer, relativeTime } = require('../services/helpers');
 
@@ -47,7 +47,7 @@ module.exports = {
 };
 
 async function setup(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const prefix = process.env.DM_PREFIX || '!';
 
