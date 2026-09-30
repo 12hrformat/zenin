@@ -46,15 +46,17 @@ module.exports = {
                 name: 'At a glance',
                 value:
                   `Members: **${guild.memberCount || 0}**\n` +
-                  `Your invite: ${invite ? invite.invite_url : '_(could not create — check my Manage Channels permission)_'}\n` +
+                  `Your invite: ${invite ? invite.invite_url : '_(failed — I need the **Create Invite** permission)_'}\n` +
                   `Owner: ${owner ? owner.user.tag : guild.ownerId}`,
                 inline: false,
               },
               {
                 name: 'Links',
+                // Discord markdown has no relative links, so commands are named as
+                // slash commands rather than linked.
                 value:
-                  `[Directory](${siteUrl()}/browse) · [Add me to another server](${botInvite()}) · ` +
-                  '[Commands](/help)',
+                  `[Directory](${siteUrl()}/browse) · [Add me elsewhere](${botInvite()}) · ` +
+                  'Run `/help` in this server for the full command list',
                 inline: false,
               },
             ],

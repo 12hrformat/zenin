@@ -28,7 +28,15 @@ async function ensurePermanentInvite(guild) {
     );
     return { invite_code: invite.code, invite_url: invite.url };
   } catch (err) {
-    console.error(`[Listings] Could not create invite for ${guild.name}:`, err.message);
+    // Name the actual missing permission instead of guessing, so the fix in
+    // Server Settings is obvious.
+    const missing = guild.members?.me?.permissions?.has('CreateInstantInvite')
+      ? ''
+      : ' (missing **Create Invite** / 0x00000008)';
+
+    console.error(
+      `[Listings] Could not create invite for ${guild.name} (${guild.id}): ${err.message}${missing}`
+    );
     return null;
   }
 }

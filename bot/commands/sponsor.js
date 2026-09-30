@@ -69,9 +69,12 @@ async function addListing(interaction) {
   if (!invite) {
     return interaction.reply({
       content:
-        "I couldn't create the permanent invite — give me the **Manage Channels** permission and try again. " +
-        '(Discord Developer Portal → your app → Bot → Privileged Gateway Intents is not needed for this; ' +
-        'just the Manage Channels permission.)',
+        "I couldn't create the permanent invite, because I don't have **Create Invite** " +
+        '(`0x00000008`) in this server.\n\n' +
+        '**Server Settings → Roles → zenin** (or whatever the role is named) and tick ' +
+        '`Create Invite`. You can drag that role above the channels it should apply to if needed. ' +
+        'Privileged Gateway Intents are unrelated to this — only the permission matters.\n\n' +
+        'Then run `/sponsor add` again.',
       flags: 64,
     });
   }
