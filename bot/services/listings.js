@@ -10,12 +10,57 @@ const config = require('../../config.json');
  * Creates or refreshes the permanent invite for a guild.
  * max_age 0 + max_uses 0 => the link never expires.
  */
+/**
+ * Picks a channel we can hang an invite off. An invite always belongs to a
+ * channel, and discord.js throws "Could not resolve channel to a guild channel"
+ * when the system channel is missing or not yet cached, so we look explicitly.
+ */
+function pickInviteChannel(guild) {
+  const usable = c => c && !c.isThread?.() && c.isTextBased?.();
+
+  // Prefer the system channel so invites land somewhere sensible.
+  if (usable(guild.systemChannel)) return guild.systemChannel;
+
+  // Otherwise the first channel the bot can actually see.
+  const fallback = guild.channels?.cache
+    ?.filter(c => usable(c) && c.viewable !== false)
+    ?.sort((a, b) => (a.position || 0) - (b.position || 0))
+    ?.first();
+
+  if (fallback) return fallback;
+
+  // Nothing cached yet: fetch and try once more.
+  return null;
+}
+
 async function ensurePermanentInvite(guild) {
   const existing = db.prepare('SELECT invite_code, invite_url FROM guilds WHERE guild_id = ?').get(guild.id);
   if (existing && existing.invite_code) return existing;
 
+  let channel = pickInviteChannel(guild);
+
+  // Channel cache can be empty right after login, so resolve it on demand.
+  if (!channel && guild.channels?.fetch) {
+    try {
+      const fetched = await guild.channels.fetch();
+      channel = fetched
+        ? [...fetched.values()].find(c => !c.isThread?.() && c.isTextBased?.())
+        : null;
+    } catch {
+      /* fall through to the error below */
+    }
+  }
+
+  if (!channel) {
+    console.error(
+      `[Listings] ${guild.name} (${guild.id}) has no text channel to attach an invite to. ` +
+        'Create a text channel or mention the bot, then run /sponsor add again.'
+    );
+    return null;
+  }
+
   try {
-    const invite = await guild.invites.create({
+    const invite = await guild.invites.create(channel, {
       max_age: 0,
       max_uses: 0,
       unique: true,
@@ -56,7 +101,9 @@ function ensureGuildRow(guild) {
     guild.id,
     guild.name,
     guild.ownerId,
-    guild.iconURL ? guild.iconURL({ extension: 'png', size: 128 }) : null,
+    // node:sqlite rejects undefined outright, and iconURL() returns undefined
+    // (not null) for a guild with no icon, so normalise to null.
+    guild.iconURL ? (guild.iconURL({ extension: 'png', size: 128 }) ?? null) : null,
     guild.memberCount || 0,
     now
   );

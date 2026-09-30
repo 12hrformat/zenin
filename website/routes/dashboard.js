@@ -129,7 +129,7 @@ module.exports = function dashboardRoutes(client) {
   });
 
   // ---- listing controls -------------------------------------------------
-  router.post('/listing', load, (req, res) => {
+  router.post('/listing', load, async (req, res) => {
     const guildId = req.guild.id;
     const existing = listings.getListing(guildId);
 
@@ -149,15 +149,13 @@ module.exports = function dashboardRoutes(client) {
     const seekingSponsor = req.body.seeking_sponsor === 'on' || req.body.seeking_sponsor === 'true';
     const seekingPartners = req.body.seeking_partners === 'on' || req.body.seeking_partners === 'true';
 
-    // Creating a listing requires an invite, so only mint it if we're in the guild.
+    // Mint the permanent invite if we don't have one. ensurePermanentInvite
+    // picks a concrete channel, which discord.js requires.
     if (!existing) {
       listings.ensureGuildRow(req.guild);
-      req.guild.invites
-        .create({ max_age: 0, max_uses: 0, unique: true, reason: 'zenin directory listing' })
-        .then(invite =>
-          db.prepare('UPDATE guilds SET invite_code = ?, invite_url = ? WHERE guild_id = ?').run(invite.code, invite.url, guildId)
-        )
-        .catch(err => console.error('[dash] could not mint invite:', err.message));
+      await listings.ensurePermanentInvite(req.guild).catch(err =>
+        console.error('[dash] could not mint invite:', err.message)
+      );
     }
 
     listings.upsertListing(guildId, {
