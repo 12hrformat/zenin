@@ -1,0 +1,312 @@
+<%- include('../partials/head') %>
+
+<%
+  const listed = !!listing;
+  const live = listed && listing.listing_status === 'active';
+  const num = n => Number(n || 0).toLocaleString();
+%>
+
+<main class="section">
+  <div class="container">
+    <header class="dashhead">
+      <div class="dashhead__ident">
+        <% if (guild.icon) { %>
+          <img class="dashhead__icon" src="<%= guild.icon %>" alt="" width="52" height="52">
+        <% } else { %>
+          <span class="dashhead__icon dashhead__icon--text" aria-hidden="true"><%= guild.name.slice(0,2).toUpperCase() %></span>
+        <% } %>
+
+        <div>
+          <p class="eyebrow">Dashboard</p>
+          <h1><%= guild.name %></h1>
+          <p class="dashhead__meta">
+            <span class="status <%= live ? 'status--live' : 'status--off' %>">
+              <%= live ? 'Live in directory' : (listed ? 'Hidden (paused)' : 'Not listed') %>
+            </span>
+            <% if (live) { %>
+              <a href="<%= guild.publicUrl %>" target="_blank" rel="noopener">View public page &rarr;</a>
+            <% } %>
+          </p>
+        </div>
+      </div>
+
+      <form method="post" action="/dashboard/logout">
+        <button class="btn btn--ghost btn--sm" type="submit">Sign out</button>
+      </form>
+    </header>
+
+    <dl class="statline statline--cards">
+      <div class="statline__item">
+        <dt>Members</dt><dd class="num"><%= num(guild.members) %></dd>
+      </div>
+      <div class="statline__item">
+        <dt>Active in chat</dt><dd class="num"><%= num(guild.activity) %></dd>
+      </div>
+      <div class="statline__item">
+        <dt>Listing views</dt><dd class="num"><%= num(listing && listing.views) %></dd>
+      </div>
+      <div class="statline__item">
+        <dt>Joins from listing</dt><dd class="num"><%= num(listing && listing.clicks) %></dd>
+      </div>
+    </dl>
+
+    <div class="dash">
+      <!-- ---------- listing ---------- -->
+      <section class="panel panel--form">
+        <h2 class="panel__title">Listing</h2>
+        <p class="panel__hint">
+          This is what visitors see in the directory. Toggle visibility any time — nothing else is affected.
+        </p>
+
+        <form class="stack" method="post" action="/dashboard/listing">
+          <label class="field">
+            <span class="field__label">Description <small><%= (listing && listing.description || '').length %>/280</small></span>
+            <textarea name="description" rows="3" maxlength="280"
+                      placeholder="What is your server about? Who is it for?"><%= listing ? listing.description : '' %></textarea>
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span class="field__label">Tags <small>comma separated</small></span>
+              <input type="text" name="tags" maxlength="120"
+                     placeholder="gaming, anime, study"
+                     value="<%= listing ? listing.tags : '' %>">
+            </label>
+
+            <label class="field">
+              <span class="field__label">Primary language</span>
+              <input type="text" name="language" maxlength="30"
+                     placeholder="English"
+                     value="<%= listing ? listing.language : '' %>">
+            </label>
+          </div>
+
+          <div class="switches">
+            <label class="switch">
+              <input type="checkbox" name="visible" <%= live ? 'checked' : '' %>>
+              <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+              <span class="switch__text">
+                <strong>Show in directory</strong>
+                <small>Off means hidden — your page and invite stop being listed.</small>
+              </span>
+            </label>
+
+            <label class="switch">
+              <input type="checkbox" name="seeking_sponsor" <%= listing && listing.seeking_sponsor ? 'checked' : '' %>>
+              <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+              <span class="switch__text">
+                <strong>Seeking sponsorship</strong>
+                <small>Shows a badge and lets visitors send you sponsorship pings.</small>
+              </span>
+            </label>
+
+            <label class="switch">
+              <input type="checkbox" name="seeking_partners" <%= listing && listing.seeking_partners ? 'checked' : '' %>>
+              <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+              <span class="switch__text">
+                <strong>Open to partnerships</strong>
+                <small>Attracts cross-promotion and collaboration offers.</small>
+              </span>
+            </label>
+          </div>
+
+          <div class="formrow">
+            <button class="btn btn--primary" type="submit">Save listing</button>
+            <% if (listed) { %>
+              <button class="btn btn--danger btn--sm" type="submit" name="action" value="remove"
+                      data-confirm="Remove <%= guild.name %> from the directory? Levels and your API key stay put.">
+                Remove from directory
+              </button>
+            <% } %>
+          </div>
+        </form>
+      </section>
+
+      <!-- ---------- AI ---------- -->
+      <section class="panel panel--form">
+        <h2 class="panel__title">AI chat</h2>
+        <p class="panel__hint">
+          Mention the bot in chat and it answers in your server’s voice. You supply the OpenRouter key —
+          it is encrypted at rest and only ever used for this server.
+        </p>
+
+        <% if (keyState.configured) { %>
+          <div class="keyline">
+            <div>
+              <span class="field__label">Active key</span>
+              <p class="keyline__value"><code><%= keyState.preview %></code></p>
+            </div>
+            <form method="post" action="/dashboard/ai/model" class="keyline__form">
+              <select name="model" aria-label="Model">
+                <% modelChoices.forEach(m => { %>
+                  <option value="<%= m.value %>" <%= keyState.model === m.value ? 'selected' : '' %>><%= m.label %></option>
+                <% }) %>
+              </select>
+              <button class="btn btn--ghost btn--sm" type="submit">Change</button>
+            </form>
+          </div>
+
+          <form method="post" action="/dashboard/ai/remove"
+                data-confirm="Remove the API key and turn the AI off in this server?">
+            <button class="btn btn--danger btn--sm" type="submit">Remove key</button>
+          </form>
+        <% } else { %>
+          <div class="notice">
+            <p><strong>No key yet.</strong> Run <code>/api setup</code> in Discord — I DM you the steps and you send
+              the key back privately. Nothing is hardcoded and the bot author never sees it.</p>
+          </div>
+        <% } %>
+      </section>
+
+      <!-- ---------- levels ---------- -->
+      <section class="panel panel--form">
+        <h2 class="panel__title">Levels &amp; XP</h2>
+        <p class="panel__hint">Members earn 15–25 XP per message, with a 20 second cooldown.</p>
+
+        <form class="stack" method="post" action="/dashboard/levels/settings">
+          <label class="field">
+            <span class="field__label">Announce level ups in</span>
+            <select name="levelup_channel">
+              <option value="" <%= settings.levelupChannel ? '' : 'selected' %>>The channel they typed in</option>
+              <% channels.forEach(c => { %>
+                <option value="<%= c.id %>" <%= settings.levelupChannel === c.id ? 'selected' : '' %>><%= c.name %></option>
+              <% }) %>
+            </select>
+          </label>
+
+          <label class="switch">
+            <input type="checkbox" name="announce_levelups" <%= settings.announceLevelups ? 'checked' : '' %>>
+            <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+            <span class="switch__text">
+              <strong>Post level up announcements</strong>
+              <small>Turn off to keep the chat quiet while still tracking XP.</small>
+            </span>
+          </label>
+
+          <button class="btn btn--ghost btn--sm" type="submit">Save level settings</button>
+        </form>
+
+        <div class="subpanel">
+          <h3 class="subpanel__title">Top members</h3>
+          <% if (topLevels.length) { %>
+            <ol class="ranklist">
+              <% topLevels.forEach(r => { %>
+                <li><span><%= r.mention %></span><span class="num">lvl <%= r.level %></span></li>
+              <% }) %>
+            </ol>
+          <% } else { %>
+            <p class="panel__hint">Nobody has earned XP yet.</p>
+          <% } %>
+        </div>
+
+        <div class="subpanel">
+          <h3 class="subpanel__title">Level roles</h3>
+          <p class="panel__hint">Configure with <code>/levelrole add</code> in Discord.</p>
+          <% if (levelRoles.length) { %>
+            <ul class="chiplist">
+              <% levelRoles.forEach(r => { %>
+                <li class="chip">
+                  <span>lvl <%= r.level %> → <%= r.mention %></span>
+                  <form method="post" action="/dashboard/levels/role/remove">
+                    <input type="hidden" name="level" value="<%= r.level %>">
+                    <button class="chip__x" type="submit" aria-label="Remove role for level <%= r.level %>">&times;</button>
+                  </form>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="panel__hint">No auto-roles configured.</p>
+          <% } %>
+        </div>
+
+        <div class="subpanel">
+          <h3 class="subpanel__title">Channels without XP</h3>
+          <p class="panel__hint">Configure with <code>/noxp add</code> in Discord.</p>
+          <% if (noXp.length) { %>
+            <ul class="chiplist">
+              <% noXp.forEach(c => { %>
+                <li class="chip">
+                  <span><%= c.mention %></span>
+                  <form method="post" action="/dashboard/levels/noxp/remove">
+                    <input type="hidden" name="channel_id" value="<%= c.id %>">
+                    <button class="chip__x" type="submit" aria-label="Re-enable XP in this channel">&times;</button>
+                  </form>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="panel__hint">XP is earned everywhere.</p>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ---------- giveaways ---------- -->
+      <section class="panel panel--form">
+        <h2 class="panel__title">Giveaways</h2>
+        <p class="panel__hint">Create with <code>/giveaway create</code> — optional minimum level gates entry.</p>
+        <% if (activeGiveaways.length) { %>
+          <ul class="chiplist">
+            <% activeGiveaways.forEach(g => { %>
+              <li class="chip chip--wide">
+                <span><strong>#<%= g.id %></strong> <%= g.prize %> · <%= g.winner_count %> winner(s) · min lvl <%= g.level_requirement || 0 %> · ends <%= g.endsLabel %> UTC</span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p class="panel__hint">Nothing running right now.</p>
+        <% } %>
+      </section>
+
+      <!-- ---------- pings ---------- -->
+      <section class="panel panel--form">
+        <h2 class="panel__title">Sponsorship pings</h2>
+        <p class="panel__hint">Delivered into your system channel by the bot.</p>
+        <% if (pings.length) { %>
+          <ul class="pinglist">
+            <% pings.forEach(p => { %>
+              <li>
+                <p><%= p.message %></p>
+                <span class="pinglist__meta">
+                  <%= p.contact ? `${p.contact} · ` : '' %><%= p.source === 'web' ? 'via directory' : 'in Discord' %> · <%= p.when %>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p class="panel__hint">No pings yet. Make sure “Seeking sponsorship” is on and your listing is visible.</p>
+        <% } %>
+      </section>
+
+      <!-- ---------- security ---------- -->
+      <section class="panel panel--form">
+        <h2 class="panel__title">Access</h2>
+        <p class="panel__hint">
+          Anyone with a dashboard token can edit this listing. Tokens last 30 days and running
+          <code>/dashboard</code> in Discord issues a fresh one.
+        </p>
+
+        <% if (sessions.length) { %>
+          <ul class="chiplist">
+            <% sessions.forEach(s => { %>
+              <li class="chip">
+                <span>&lt;@<%= s.user_id %>&gt; · expires <%= new Date(s.expires_at).toISOString().slice(0,10) %></span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+
+        <div class="formrow">
+          <form method="post" action="/dashboard/session/revoke">
+            <button class="btn btn--ghost btn--sm" type="submit">Revoke my tokens</button>
+          </form>
+          <form method="post" action="/dashboard/session/revoke-all"
+                data-confirm="Revoke every dashboard token for this server?">
+            <button class="btn btn--danger btn--sm" type="submit">Revoke all</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

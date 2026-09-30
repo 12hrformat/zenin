@@ -1,0 +1,50 @@
+<%- include('../partials/head') %>
+
+<main class="section">
+  <div class="container container--narrow">
+    <div class="authcard">
+      <h1>Dashboard sign in</h1>
+      <p class="authcard__lead">
+        Server owners control their listing here. Run <code>/dashboard</code> in your Discord server and
+        I DM you a private token — paste it below.
+      </p>
+
+      <% if (typeof gone !== 'undefined' && gone) { %>
+        <div class="banner banner--err"><%= gone %></div>
+      <% } %>
+
+      <form class="stack" method="post" action="/dashboard/login">
+        <label class="field">
+          <span class="field__label">Dashboard token</span>
+          <input
+            type="text"
+            name="token"
+            required
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Paste the token from your DM"
+          >
+        </label>
+
+        <button class="btn btn--primary btn--block" type="submit">Sign in</button>
+      </form>
+
+      <div class="steps steps--compact">
+        <div class="step">
+          <span class="step__num">1</span>
+          <p>In your server, run <code>/dashboard</code>.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">2</span>
+          <p>I send you a link and token in a DM.</p>
+        </div>
+        <div class="step">
+          <span class="step__num">3</span>
+          <p>Paste it above to manage your listing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

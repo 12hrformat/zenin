@@ -1,0 +1,16 @@
+<%- include('partials/head') %>
+
+<main class="section">
+  <div class="container container--narrow">
+    <div class="empty empty--page">
+      <p class="empty__code">500</p>
+      <h1>Something broke on my end</h1>
+      <p><%= typeof message !== 'undefined' ? message : 'Unexpected error.' %></p>
+      <div class="cta__actions">
+        <a class="btn btn--primary" href="/">Back home</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

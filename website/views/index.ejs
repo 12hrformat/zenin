@@ -1,0 +1,157 @@
+<%- include('partials/head') %>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Discord server directory</p>
+      <h1 class="hero__title">Let people find your server<span class="accent">.</span></h1>
+      <p class="hero__lead">
+        List your Discord server on a public board, get discovered by people looking for communities
+        like yours, and receive sponsorship and partnership pings directly in your server.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="<%= invite %>" target="_blank" rel="noopener">Add zenin to your server</a>
+        <a class="btn btn--ghost" href="/browse">Browse <%= stats.listed %> listed servers</a>
+      </div>
+
+      <dl class="statline">
+        <div class="statline__item">
+          <dt>Servers in network</dt>
+          <dd class="num"><%= stats.servers.toLocaleString() %></dd>
+        </div>
+        <div class="statline__item">
+          <dt>Seeking sponsors</dt>
+          <dd class="num"><%= stats.listed.toLocaleString() %></dd>
+        </div>
+        <div class="statline__item">
+          <dt>Members reachable</dt>
+          <dd class="num"><%= stats.members.toLocaleString() %></dd>
+        </div>
+        <div class="statline__item">
+          <dt>Messages counted</dt>
+          <dd class="num"><%= stats.messages.toLocaleString() %></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="container">
+      <header class="section__head">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps, no dashboard gymnastics</h2>
+      </header>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step__num">01</span>
+          <h3>Add the bot</h3>
+          <p>One click installs zenin. It greets your server and mints a permanent invite that never expires, so your listing link can’t rot.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">02</span>
+          <h3>Run <code>/sponsor add</code></h3>
+          <p>Describe your server and add a few tags. That is the whole form. Your listing appears on the directory immediately.</p>
+        </li>
+        <li class="step">
+          <span class="step__num">03</span>
+          <h3>Get discovered</h3>
+          <p>People browse by topic and size, hit Join, and send sponsorship pings that land in your system channel.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="features">
+    <div class="container">
+      <header class="section__head">
+        <p class="eyebrow">What it does</p>
+        <h2>A directory bot, not just a bot</h2>
+        <p class="section__sub">
+          The directory is the point. Everything else makes your server worth joining once people arrive.
+        </p>
+      </header>
+
+      <div class="features">
+        <article class="feature">
+          <h3>Permanent server links</h3>
+          <p>Every server gets a never-expiring invite on join, so listings and share links stay valid indefinitely.</p>
+        </article>
+        <article class="feature">
+          <h3>Sponsorship inboxes</h3>
+          <p>Pings from the site arrive formatted inside your own Discord, with the sender’s contact details attached.</p>
+        </article>
+        <article class="feature">
+          <h3>AI that learns your chat</h3>
+          <p>Mention the bot and it answers in your server’s slang. It picks up abbreviations and running jokes from the room and uses them back.</p>
+        </article>
+        <article class="feature">
+          <h3>Levels and leaderboards</h3>
+          <p>Members earn XP as they chat, with progress bars, auto-roles at level milestones and a full leaderboard.</p>
+        </article>
+        <article class="feature">
+          <h3>Giveaways by level</h3>
+          <p>Set a minimum level to enter, so giveaways reward people who actually participate instead of drive-by accounts.</p>
+        </article>
+        <article class="feature">
+          <h3>Your key, your billing</h3>
+          <p>Each server supplies its own OpenRouter key over a private DM. Keys are encrypted at rest and never shared with anyone.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <% if (featured.length) { %>
+  <section class="section">
+    <div class="container">
+      <header class="section__head section__head--row">
+        <div>
+          <p class="eyebrow">Largest right now</p>
+          <h2>Biggest communities listed</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="/browse?sort=members">See all</a>
+      </header>
+
+      <div class="grid">
+        <% featured.forEach(s => { %><%- include('partials/server-card', { s }) %><% }) %>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <% if (fresh.length) { %>
+  <section class="section section--alt">
+    <div class="container">
+      <header class="section__head section__head--row">
+        <div>
+          <p class="eyebrow">Just listed</p>
+          <h2>New on the board</h2>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="/browse?sort=recent">See all</a>
+      </header>
+
+      <div class="grid">
+        <% fresh.forEach(s => { %><%- include('partials/server-card', { s }) %><% }) %>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <section class="section">
+    <div class="container">
+      <div class="cta">
+        <div>
+          <h2>Put your server on the board</h2>
+          <p>Add the bot, run one command, and start receiving discovery and sponsorship pings.</p>
+        </div>
+        <div class="cta__actions">
+          <a class="btn btn--primary" href="<%= invite %>" target="_blank" rel="noopener">Add to Discord</a>
+          <a class="btn btn--ghost" href="/dashboard">Server dashboard</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

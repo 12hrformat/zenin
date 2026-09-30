@@ -1,0 +1,108 @@
+<%- include('partials/head') %>
+
+<main class="section">
+  <div class="container">
+    <a class="backlink" href="/browse">&larr; All servers</a>
+
+    <div class="profile">
+      <div class="profile__main">
+        <div class="profile__head">
+          <% if (server.icon) { %>
+            <img class="profile__icon" src="<%= server.icon %>" alt="" width="80" height="80">
+          <% } else { %>
+            <span class="profile__icon profile__icon--text" aria-hidden="true"><%= server.name.slice(0, 2).toUpperCase() %></span>
+          <% } %>
+
+          <div>
+            <h1 class="profile__name"><%= server.name %></h1>
+            <p class="profile__meta">
+              <span class="badge badge--quiet"><%= server.severity.label %></span>
+              <% if (server.language) { %><span class="profile__lang"><%= server.language %></span><% } %>
+              <% if (server.seekingSponsor) { %><span class="badge">Seeking sponsor</span><% } %>
+              <% if (server.seekingPartners) { %><span class="badge badge--quiet">Open to partners</span><% } %>
+            </p>
+          </div>
+        </div>
+
+        <% if (server.description) { %>
+          <p class="profile__desc"><%= server.description %></p>
+        <% } %>
+
+        <% if (server.tags.length) { %>
+          <ul class="tags">
+            <% server.tags.forEach(t => { %>
+              <li><a class="tag" href="/browse?tag=<%= encodeURIComponent(t) %>"><%= t %></a></li>
+            <% }) %>
+          </ul>
+        <% } %>
+
+        <div class="profile__actions">
+          <a class="btn btn--primary" href="/go/<%= server.id %>" target="_blank" rel="noopener">Join <%= server.name %></a>
+        </div>
+      </div>
+
+      <aside class="profile__side">
+        <div class="panel">
+          <h3 class="panel__title">At a glance</h3>
+          <dl class="metrics">
+            <div><dt>Members</dt><dd class="num"><%= server.membersLabel %></dd></div>
+            <div><dt>Active in chat</dt><dd class="num"><%= server.active %></dd></div>
+            <div><dt>Listing views</dt><dd class="num"><%= server.views.toLocaleString() %></dd></div>
+            <div><dt>Joins from here</dt><dd class="num"><%= server.clicks.toLocaleString() %></dd></div>
+            <div><dt>Pings received</dt><dd class="num"><%= server.invitesReceived %></dd></div>
+            <div><dt>Listed since</dt><dd><%= server.joinedAt %></dd></div>
+          </dl>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel__title">Offer sponsorship or a partnership</h3>
+          <p class="panel__hint">
+            Your message is delivered straight into their Discord with your contact details.
+          </p>
+
+          <% if (server.seekingSponsor || server.seekingPartners) { %>
+            <form class="stack" method="post" action="/servers/<%= server.id %>/ping">
+              <% if (process.env.SITE_SECRET) { %>
+                <input type="hidden" name="secret" value="<%= process.env.SITE_SECRET %>">
+              <% } %>
+
+              <label class="field">
+                <span class="field__label">Your contact (optional)</span>
+                <input type="text" name="contact" maxlength="80" placeholder="Discord @handle, email, or server link">
+              </label>
+
+              <label class="field">
+                <span class="field__label">Your message</span>
+                <textarea name="message" rows="4" maxlength="400" required
+                          placeholder="What you are offering, and what you want in return."></textarea>
+              </label>
+
+              <button class="btn btn--primary btn--block" type="submit">Send ping</button>
+              <p class="panel__fine">Max 5 pings per hour from one address.</p>
+            </form>
+          <% } else { %>
+            <p class="panel__hint">This server isn’t accepting pings right now.</p>
+          <% } %>
+        </div>
+
+        <% if (server.pings.length) { %>
+          <div class="panel">
+            <h3 class="panel__title">Recent pings</h3>
+            <ul class="pinglist">
+              <% server.pings.forEach(p => { %>
+                <li>
+                  <p><%= p.message %></p>
+                  <span class="pinglist__meta">
+                    <%= p.source === 'web' ? 'via directory' : 'in Discord' %> · <%= p.when %>
+                  </span>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

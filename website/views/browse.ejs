@@ -1,0 +1,98 @@
+<%- include('partials/head') %>
+
+<main class="section">
+  <div class="container">
+    <header class="section__head section__head--row">
+      <div>
+        <p class="eyebrow">Directory</p>
+        <h2>Browse servers</h2>
+        <p class="section__sub">
+          <span class="num"><%= total.toLocaleString() %></span> listed
+          <% if (filters.sponsoring) { %> · filtered to those seeking sponsors<% } %>
+        </p>
+      </div>
+      <a class="btn btn--primary btn--sm" href="<%= invite %>" target="_blank" rel="noopener">List your server</a>
+    </header>
+
+    <form class="filters" method="get" action="/browse">
+      <div class="filters__search">
+        <input
+          type="search"
+          name="q"
+          value="<%= filters.q %>"
+          placeholder="Search names, descriptions or tags"
+          aria-label="Search servers"
+        >
+      </div>
+
+      <div class="filters__row">
+        <select name="sort" aria-label="Sort by">
+          <option value="recent"   <%= filters.sort === 'recent' ? 'selected' : '' %>>Newest first</option>
+          <option value="members"  <%= filters.sort === 'members' ? 'selected' : '' %>>Most members</option>
+          <option value="clicks"   <%= filters.sort === 'clicks' ? 'selected' : '' %>>Most joins</option>
+          <option value="views"    <%= filters.sort === 'views' ? 'selected' : '' %>>Most viewed</option>
+          <option value="oldest"   <%= filters.sort === 'oldest' ? 'selected' : '' %>>Listed longest</option>
+        </select>
+
+        <select name="min" aria-label="Minimum members">
+          <option value="0"  <%= filters.min === 0 ? 'selected' : '' %>>Any size</option>
+          <option value="100"   <%= filters.min === 100 ? 'selected' : '' %>>100+ members</option>
+          <option value="500"   <%= filters.min === 500 ? 'selected' : '' %>>500+ members</option>
+          <option value="1000"  <%= filters.min === 1000 ? 'selected' : '' %>>1k+ members</option>
+          <option value="10000" <%= filters.min === 10000 ? 'selected' : '' %>>10k+ members</option>
+        </select>
+
+        <select name="tag" aria-label="Filter by tag">
+          <option value="">All topics</option>
+          <% tags.forEach(t => { %>
+            <option value="<%= t.tag %>" <%= filters.tag === t.tag ? 'selected' : '' %>><%= t.tag %> (<%= t.count %>)</option>
+          <% }) %>
+        </select>
+
+        <label class="toggle">
+          <input type="checkbox" name="sponsoring" value="1" <%= filters.sponsoring ? 'checked' : '' %>>
+          <span class="toggle__track" aria-hidden="true"><span class="toggle__thumb"></span></span>
+          <span class="toggle__label">Seeking sponsors</span>
+        </label>
+
+        <button class="btn btn--ghost btn--sm" type="submit">Apply</button>
+        <a class="btn btn--quiet btn--sm" href="/browse">Reset</a>
+      </div>
+    </form>
+
+    <% if (!servers.length) { %>
+      <div class="empty">
+        <h3>No servers match</h3>
+        <p>Try a broader search, or clear the filters.</p>
+        <a class="btn btn--ghost" href="/browse">Clear filters</a>
+      </div>
+    <% } else { %>
+      <div class="grid">
+        <% servers.forEach(s => { %><%- include('partials/server-card', { s }) %><% }) %>
+      </div>
+
+      <% if (totalPages > 1) {
+           const qs = n => {
+             const p = new URLSearchParams();
+             if (filters.q) p.set('q', filters.q);
+             if (filters.tag) p.set('tag', filters.tag);
+             if (filters.min) p.set('min', String(filters.min));
+             if (filters.sort) p.set('sort', filters.sort);
+             if (filters.sponsoring) p.set('sponsoring', '1');
+             p.set('page', String(n));
+             return `/browse?${p.toString()}`;
+           };
+      %>
+        <nav class="pager" aria-label="Pagination">
+          <a class="btn btn--ghost btn--sm <%= page <= 1 ? 'is-disabled' : '' %>"
+             href="<%= page <= 1 ? '#' : qs(page - 1) %>">Previous</a>
+          <span class="pager__count">Page <%= page %> of <%= totalPages %></span>
+          <a class="btn btn--ghost btn--sm <%= page >= totalPages ? 'is-disabled' : '' %>"
+             href="<%= page >= totalPages ? '#' : qs(page + 1) %>">Next</a>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

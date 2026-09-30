@@ -1,0 +1,55 @@
+<footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__brand">
+          <a class="brand" href="/">
+            <span class="brand__mark" aria-hidden="true">z</span>
+            <span class="brand__name">zenin</span>
+          </a>
+          <p class="footer__blurb"><%= site.description %></p>
+          <div class="footer__social">
+            <a class="social" href="<%= site.repo %>" target="_blank" rel="noopener">
+              <span class="social__label">GitHub</span>
+              <span class="social__handle"><%= site.author %></span>
+            </a>
+            <a class="social" href="<%= site.instagram %>" target="_blank" rel="noopener">
+              <span class="social__label">Instagram</span>
+              <span class="social__handle">@mommy_said_im_special</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer__col">
+          <h4>Directory</h4>
+          <a href="/browse">Browse servers</a>
+          <a href="/browse?sponsoring=1">Seeking sponsors</a>
+          <a href="/browse?sort=members">Largest servers</a>
+          <a href="/api/servers">JSON API</a>
+        </div>
+
+        <div class="footer__col">
+          <h4>Bot</h4>
+          <a href="<%= invite %>" target="_blank" rel="noopener">Add to Discord</a>
+          <a href="/#features">Features</a>
+          <a href="/#how">How it works</a>
+          <a href="/dashboard">Server dashboard</a>
+        </div>
+
+        <div class="footer__col">
+          <h4>Live</h4>
+          <div class="footer__stat"><span>Servers in network</span><b><%= stats.servers.toLocaleString() %></b></div>
+          <div class="footer__stat"><span>Listed for sponsors</span><b><%= stats.listed.toLocaleString() %></b></div>
+          <div class="footer__stat"><span>Members reachable</span><b><%= stats.members.toLocaleString() %></b></div>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p>Built by <a href="<%= site.repo %>" target="_blank" rel="noopener"><%= site.author %></a> (<%= site.authorNick %>) · <%= new Date().getFullYear() %></p>
+        <p class="footer__note">Not affiliated with Discord Inc.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>

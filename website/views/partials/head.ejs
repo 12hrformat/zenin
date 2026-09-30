@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title ? `${title}` : site.name %></title>
+  <meta name="description" content="<%= site.description %>">
+  <meta name="theme-color" content="#0A0A0B">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= title || site.name %>">
+  <meta property="og:description" content="<%= site.description %>">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="toprule" aria-hidden="true"></div>
+
+  <header class="nav">
+    <div class="container nav__inner">
+      <a class="brand" href="/">
+        <span class="brand__mark" aria-hidden="true">z</span>
+        <span class="brand__name">zenin</span>
+      </a>
+
+      <nav class="nav__links" id="nav-links">
+        <a class="nav__link <%= path.startsWith('/browse') || path.startsWith('/servers') ? 'is-active' : '' %>" href="/browse">Browse</a>
+        <a class="nav__link" href="/#how">How it works</a>
+        <a class="nav__link" href="/#features">Features</a>
+        <a class="nav__link <%= path.startsWith('/dashboard') ? 'is-active' : '' %>" href="/dashboard">Dashboard</a>
+      </nav>
+
+      <div class="nav__actions">
+        <a class="btn btn--primary btn--sm" href="<%= invite %>" target="_blank" rel="noopener">Add to Discord</a>
+        <button class="nav__toggle" type="button" aria-label="Menu" aria-expanded="false" data-nav-toggle>
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <% if (ok) { %>
+    <div class="container"><div class="banner banner--ok"><%= ok %></div></div>
+  <% } %>
+  <% if (err) { %>
+    <div class="container"><div class="banner banner--err"><%= err %></div></div>
+  <% } %>

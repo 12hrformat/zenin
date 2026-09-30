@@ -1,0 +1,48 @@
+<%
+  const initials = (s.name || '?').slice(0, 2).toUpperCase();
+  const href = `/servers/${s.id}`;
+%>
+<article class="card server">
+  <div class="server__head">
+    <% if (s.icon) { %>
+      <img class="server__icon" src="<%= s.icon %>" alt="" loading="lazy" width="44" height="44">
+    <% } else { %>
+      <span class="server__icon server__icon--text" aria-hidden="true"><%= initials %></span>
+    <% } %>
+
+    <div class="server__ident">
+      <h3 class="server__name"><a href="<%= href %>"><%= s.name %></a></h3>
+      <p class="server__meta">
+        <span class="num"><%= s.membersLabel %></span> members
+        <% if (s.active > 0) { %>
+          <span class="dot" aria-hidden="true"></span>
+          <span class="num"><%= s.active %></span> active
+        <% } %>
+      </p>
+    </div>
+
+    <% if (s.seekingSponsor) { %>
+      <span class="badge">Seeking sponsor</span>
+    <% } else if (s.seekingPartners) { %>
+      <span class="badge badge--quiet">Open to partners</span>
+    <% } %>
+  </div>
+
+  <% if (s.description) { %>
+    <p class="server__desc"><%= s.description %></p>
+  <% } %>
+
+  <% if (s.tags.length) { %>
+    <ul class="tags">
+      <% s.tags.forEach(t => { %>
+        <li><a class="tag" href="/browse?tag=<%= encodeURIComponent(t) %>"><%= t %></a></li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <div class="server__foot">
+    <a class="btn btn--primary btn--sm" href="/go/<%= s.id %>" target="_blank" rel="noopener">Join server</a>
+    <% if (s.language) { %><span class="server__lang"><%= s.language %></span><% } %>
+    <a class="server__more" href="<%= href %>">Details</a>
+  </div>
+</article>
