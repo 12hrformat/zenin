@@ -45,13 +45,21 @@ async function postGiveaway(client, guildId, giveawayId) {
   return msg;
 }
 
-/** Users whose XP clears the level gate. */
+/**
+ * Users whose XP clears the level gate.
+ *
+ * Note the deliberate absence of `xp > 0`: a member who has never chatted has
+ * xp 0, and levelFromXp(0) is level 1. With the default "no minimum level"
+ * setting a requirement of 0 must let them in, and filtering them out made
+ * every reaction from a new member silently ineligible, so the giveaway ended
+ * with "nobody entered".
+ */
 function eligibleEntrants(giveaway) {
   const required = giveaway.level_requirement || 0;
   return db
-    .prepare('SELECT user_id, xp FROM user_levels WHERE guild_id = ? AND xp > 0')
+    .prepare('SELECT user_id, xp FROM user_levels WHERE guild_id = ?')
     .all(giveaway.guild_id)
-    .filter(u => levelFromXp(u.xp) >= required);
+    .filter(u => levelFromXp(u.xp || 0) >= required);
 }
 
 /**
@@ -69,15 +77,20 @@ async function pickWinners(client, giveaway) {
 
     if (reaction) {
       for await (const user of reaction.users.fetch()) {
+        // The bot reacts to its own giveaway post, so it is always present in
+        // the reaction list. It must never be able to win.
+        if (user.bot) continue;
         if (eligible.has(user.id)) entrants.push(user.id);
       }
+    } else {
+      console.error(`[Giveaway] No ${EMOJI} reaction found on message ${giveaway.message_id} (#${giveaway.id})`);
     }
   } catch (err) {
     console.error(`[Giveaway] Could not read reactions for #${giveaway.id}:`, err.message);
   }
 
-  if (entrants.length === 0) entrants = [...eligible];
-
+  // No fallback to "everyone eligible": picking someone who never entered is
+  // worse than picking nobody, and it hid the real problem behind a winner.
   const winners = [];
   const pool = [...new Set(entrants)];
   for (let i = 0; i < giveaway.winner_count && pool.length > 0; i++) {
@@ -91,10 +104,17 @@ async function endGiveaway(client, giveaway) {
 
   const channel = client.channels.cache.get(giveaway.channel_id);
   if (channel) {
-    const mention = winners.length ? winners.map(id => `<@${id}>`).join(', ') : 'nobody entered';
-    await channel
-      .send(`🎉 **GIVEAWAY ENDED**\n**Prize:** ${giveaway.prize}\n**Winner(s):** ${mention}\n\nGreat game!`)
-      .catch(() => {});
+    const body = winners.length
+      ? `🎉 **GIVEAWAY ENDED**\n**Prize:** ${giveaway.prize}\n**Winner(s):** ${winners
+          .map(id => `<@${id}>`)
+          .join(', ')}\n\nGreat game!`
+      : `🎉 **GIVEAWAY ENDED — no winner**\n**Prize:** ${giveaway.prize}\n\n` +
+        `Nobody who reacted with ${EMOJI} met the rules, so nobody was picked.\n` +
+        (giveaway.level_requirement > 0
+          ? `Entrants need **level ${giveaway.level_requirement}** or higher — check with \`/level\`.`
+          : `Nobody had reacted with ${EMOJI} on the giveaway message.`);
+
+    await channel.send(body).catch(() => {});
   }
 
   // Try to DM winners so they actually claim the prize.

@@ -50,7 +50,18 @@ for (const file of fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'))) {
 const eventsDir = path.join(__dirname, 'bot', 'events');
 for (const file of fs.readdirSync(eventsDir).filter(f => f.endsWith('.js'))) {
   const event = require(path.join(eventsDir, file));
-  const handler = (...args) => event.execute(...args);
+  // A throw inside an event handler must not take the whole process down. A
+  // single malformed message was enough to kill the bot and every other server
+  // it was in, so failures are logged with context and the loop continues.
+  const handler = async (...args) => {
+    try {
+      await event.execute(...args);
+    } catch (err) {
+      const label = event.name;
+      console.error(`[error] ${label}:`, err.message);
+      if (process.env.NODE_ENV !== 'production') console.error(err.stack);
+    }
+  };
   if (event.once) client.once(event.name, handler);
   else client.on(event.name, handler);
   console.log(`[load] event ${event.name}`);

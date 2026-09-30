@@ -18,7 +18,9 @@ module.exports = {
     if (message.author.id === message.client.user.id) return;
 
     // Direct messages: the only supported command there is submitting an API key.
-    if (message.channel.isDMs()) return handleDirectMessage(message);
+    // discord.js v14 renamed isDMs() to isDMBased(); calling the old name throws
+    // a TypeError on every message, which killed the handler before any command ran.
+    if (message.channel.isDMBased()) return handleDirectMessage(message);
 
     // Mentioning the bot always talks to the AI - no command needed.
     if (message.mentions.has(message.client.user.id)) {
@@ -147,15 +149,42 @@ async function handleMention(message) {
  */
 async function handleDirectMessage(message) {
   const prefix = process.env.DM_PREFIX || '!';
-  const [cmd, ...rest] = message.content.trim().split(/\s+/);
-  if (cmd !== `${prefix}setkey`) {
+  const tokens = message.content.trim().split(/\s+/);
+
+  // Accept both "!setkey <key>" and "! setkey <key>" - people are not careful
+  // about the space, and requiring the prefix glued to the command silently
+  // ignored half the attempts. The command is found by stripping a leading
+  // prefix token, or by matching a prefix glued onto the first token.
+  let command;
+  let restFrom;
+
+  if (!prefix) {
+    command = tokens[0];
+    restFrom = 1;
+  } else if (tokens[0].startsWith(prefix) && tokens[0].length > prefix.length) {
+    // Glued: "!setkey"
+    command = tokens[0].slice(prefix.length);
+    restFrom = 1;
+  } else if (tokens[0] === prefix) {
+    // Spaced: "! setkey"
+    command = tokens[1];
+    restFrom = 2;
+  } else {
+    // No prefix at all - not a command, so fall through to the help reply.
+    command = undefined;
+    restFrom = 1;
+  }
+
+  if (command !== 'setkey') {
     await message
       .reply(`Send me \`${prefix}setkey sk-or-...\` to attach an OpenRouter key to your server.`)
       .catch(() => {});
     return;
   }
 
-  const key = rest.join('').trim();
+  // Keys can be pasted with internal spaces or line breaks, so rejoin whatever
+  // followed the command name before validating.
+  const key = tokens.slice(restFrom).join('').trim();
   const { looksValid } = require('../services/crypto');
 
   if (!looksValid(key)) {
